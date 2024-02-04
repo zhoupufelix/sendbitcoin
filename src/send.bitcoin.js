@@ -1,29 +1,31 @@
 // sending bitcoin
 const axios = require("axios");
 const bitcore = require("bitcore-lib");
-const TESTNET = true
 
-module.exports = sendBitcoin = async (recieverAddress, amountToSend) => {
+
+module.exports = sendBitcoin = async (privateKey,sourceAddress,amountToSend,recieverAddress,isTest) => {
   try {
-    const privateKey =
-      "6756e6564d3c74b857d5800113f35878e5a854f2fce09c780265b94e53b6bc93";
-    const sourceAddress = "mvWqrftxCJa5eSKp229gkZbMf2XXrfZe9p";
+
     const satoshiToSend = amountToSend * 100000000;
     let fee = 0;
     let inputCount = 0;
     let outputCount = 2;
 
     const recommendedFee = await axios.get(
-      "https://bitcoinfees.earn.com/api/v1/fees/recommended"
+        "https://mempool.space/api/v1/fees/recommended"
     );
 
     const transaction = new bitcore.Transaction();
     let totalAmountAvailable = 0;
 
     let inputs = [];
+    const utxoUrl = isTest ?
+        `https://blockstream.info/testnet/api/address/${sourceAddress}/utxo`
+        :`https://blockstream.info/api/address/${sourceAddress}/utxo`;
+
     const resp = await axios({
         method: "GET",
-        url: `https://blockstream.info/testnet/api/address/${sourceAddress}/utxo`,
+        url: utxoUrl,
     });
     const utxos = resp.data
 
@@ -49,7 +51,7 @@ module.exports = sendBitcoin = async (recieverAddress, amountToSend) => {
       inputCount * 180 + outputCount * 34 + 10 - inputCount;
 
     fee = transactionSize * recommendedFee.data.hourFee / 3; // satoshi per byte
-    if (TESTNET) {
+    if (isTest) {
       fee = transactionSize * 1 // 1 sat/byte is fine for testnet
     }
     if (totalAmountAvailable - satoshiToSend - fee < 0) {
@@ -72,11 +74,11 @@ module.exports = sendBitcoin = async (recieverAddress, amountToSend) => {
 
     // serialize Transactions
     const serializedTransaction = transaction.serialize();
-
+    const txUrl = isTest ? `https://blockstream.info/testnet/api/tx` : `https://blockstream.info/api/tx`;
     // Send transaction
     const result = await axios({
       method: "POST",
-      url: `https://blockstream.info/testnet/api/tx`,
+      url: txUrl,
       data: serializedTransaction,
     });
     return result.data;

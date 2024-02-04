@@ -9,7 +9,8 @@
   "dependencies": {
     "axios": "^0.27.2",
     "bitcore-lib": "^8.25.38",
-    "bitcore-mnemonic": "^8.25.36"
+    "bitcore-mnemonic": "^8.25.36",
+    "commander": "^12.0.0"
   },
   "keywords": [],
   "author": "",
