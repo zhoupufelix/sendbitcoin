@@ -3,7 +3,7 @@ const axios = require("axios");
 const bitcore = require("bitcore-lib");
 
 
-module.exports = sendBitcoin = async (privateKey,sourceAddress,amountToSend,recieverAddress,isTest) => {
+module.exports = sendBitcoin = async (privateKey,sourceAddress,recieverAddress,amountToSend,isTest) => {
   try {
 
     const satoshiToSend = amountToSend * 100000000;
